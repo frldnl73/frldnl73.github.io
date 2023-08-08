@@ -1,0 +1,45 @@
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <title>Gamedev Canvas Workshop</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+      canvas {
+        background: #eee;
+        display: block;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="myCanvas" width="600" height="600"></canvas>
+
+    <script type="module">
+        import { Nav } from './js/nav.js'
+        import * as common from './js/common.js'
+
+        const canvas = document.getElementById("myCanvas");
+        const ctx = canvas.getContext("2d");
+        
+        const nav = new Nav (common.CANVAS_WIDTH, common.CANVAS_HEIGHT, ctx);
+        nav.init ();
+
+        function animate () {
+            ctx.clearRect (0, 0, common.CANVAS_WIDTH, common.CANVAS_HEIGHT);
+
+            ctx.fillStyle = "#1CAA06";
+            ctx.fillRect(0, 0, common.CANVAS_WIDTH, common.CANVAS_HEIGHT);
+           
+            nav.update ();            
+            nav.render ();            
+    
+            requestAnimationFrame (animate);
+        }
+        animate ();
+
+    </script>
+  </body>
+</html>
