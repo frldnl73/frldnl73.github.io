@@ -634,7 +634,7 @@ export class Game {
         }
 
         this.text_scorePlayerOne.text = "You scored : " + playerOneScore;
-        this.text_scorePlayerTwo.text = "Player two scored : " + playerTwoScore;
+        this.text_scorePlayerTwo.text = "Robot scored : " + playerTwoScore;
     }
 
     clickHandler (e, nav) {
