@@ -5,16 +5,16 @@ const CARD_WIDTH = 50;
 const CARD_HEIGHT = 80;
 const CARD_SPACING = 20;
 const UPPER_MARGIN = 10;
-const LOWER_MARGIN = 100;
+const LOWER_MARGIN = 10;
 const RIGHT_MARGIN = 10;
 const LEFT_MARGIN = 10;
 const SHUFFLE_TIMES = 3;
-const DELAY_ROBOT_PLAY = 1000;
-const DELAY_SHOW_OUTCOME = 1000;
+const DELAY_ROBOT_PLAY = 500;
+const DELAY_SHOW_OUTCOME = 500;
 const DELAY_SHOW_OUTCOME_LAST_HAND = 2000;
 const CARD_SPRITE_W = 81;
 const CARD_SPRITE_H = 117;
-const SCALE_DOWN = 0.8;
+const SCALE_DOWN = 0.7;
 var g_card_width_scaledDown;
 var g_card_height_scaledDown;
 
@@ -48,46 +48,19 @@ export class Game {
             this.cardsPlayed [i].rank = common.Rank.NoRank;
         }
 
-        g_card_width_scaledDown = CARD_WIDTH * SCALE_DOWN;
-        g_card_height_scaledDown = CARD_HEIGHT * SCALE_DOWN;
-
-        let playedCardsBlock_width = CARD_WIDTH + CARD_SPACING + CARD_WIDTH;
-        this.coord_cardPlayed_playerOne = {x : (this.width - playedCardsBlock_width) / 2, y : (this.height - CARD_HEIGHT) / 2};
-        this.coord_cardPlayed_playerTwo = {x : this.coord_cardPlayed_playerOne.x + CARD_WIDTH + CARD_SPACING, y : this.coord_cardPlayed_playerOne.y};
-
-        this.coord_cardPlPrev_playerOne = {x : LEFT_MARGIN, y : this.coord_cardPlayed_playerOne.y};
-        this.coord_cardPlPrev_playerTwo = {x : this.coord_cardPlPrev_playerOne.x + CARD_WIDTH + CARD_SPACING, y : this.coord_cardPlayed_playerOne.y};
-
-        this.text_playerOneWin = {text : "YOU WIN", x : this.coord_cardPlayed_playerOne.x, y : this.coord_cardPlayed_playerOne.y - 10, 
-                                            textAlign : "left", font : "20px san-serif"};
-        this.text_playerTwoWin = {text : "PLAYER TWO WINS", x : this.coord_cardPlayed_playerOne.x, y : this.coord_cardPlayed_playerOne.y - 10, 
-                                            textAlign : "left", font : "20px san-serif"};
-        this.text_plPrevOneWin = {text : "YOU WIN", x : LEFT_MARGIN, y : this.coord_cardPlayed_playerOne.y - 10, 
-                                            textAlign : "left", font : "15px san-serif"};
-        this.text_plPrevTwoWin = {text : "PLAYER TWO WINS", x : LEFT_MARGIN, y : this.coord_cardPlayed_playerOne.y - 10, 
-                                            textAlign : "left", font : "15px san-serif"};
-
-        let handCardsBlock = CARD_WIDTH + CARD_SPACING + CARD_WIDTH + CARD_SPACING + CARD_WIDTH;
-        this.coord_handCards_playerOne = [];
-        this.coord_handCards_playerOne [0] = {x : (this.width - handCardsBlock) / 2, y : UPPER_MARGIN};
-        for (let i=1; i < common.HAND_CARDS; i++) {
-           this.coord_handCards_playerOne [i] = { x : this.coord_handCards_playerOne [0].x + (CARD_WIDTH + CARD_SPACING) * i, y : UPPER_MARGIN};
+        this.coord_cardPlayed_playerOne = {}; this.coord_cardPlayed_playerTwo = {};
+        this.coord_cardPlPrev_playerOne = {}; this.coord_cardPlPrev_playerTwo = {};
+        this.text_playerOneWin = {}; this.text_playerTwoWin = {};
+        this.text_plPrevOneWin = {}; this.text_plPrevTwoWin = {};
+        this.text_playerOne = {}; this.text_playerTwo = {};
+        this.coord_handCards_playerOne = {}; this.coord_handCards_playerTwo = {};
+        this.text_scorePlayerOne = {}; this.text_scorePlayerTwo = {};
+        this.text_exit_game = {}; this.coord_deck = {}; this.coord_trump = {};
+        for (let i=0; i < common.HAND_CARDS; i++) {
+            this.coord_handCards_playerOne [i] = {}
+            this.coord_handCards_playerTwo [i] = {}
         }
-        this.coord_handCards_playerTwo = [];
-        this.coord_handCards_playerTwo [0] = {x : (this.width - handCardsBlock) / 2, y : this.height - CARD_HEIGHT - LOWER_MARGIN};
-        for (let i=1; i < common.HAND_CARDS; i++) {
-           this.coord_handCards_playerTwo [i] = {x : this.coord_handCards_playerTwo[0].x + (CARD_WIDTH + CARD_SPACING) * i, y : this.height - CARD_HEIGHT - LOWER_MARGIN};
-        }
-        this.text_playerOne = {text : "YOU", x : LEFT_MARGIN, y : this.coord_handCards_playerOne [0].y, textAlign : "left", font : "20px san-serif"};
-        this.text_playerTwo = {text : "PLAYER TWO", x : LEFT_MARGIN, y : this.coord_handCards_playerTwo [0].y, textAlign : "left", font : "20px san-serif"};
-
-        this.text_scorePlayerOne = {text : "", x : LEFT_MARGIN, y : UPPER_MARGIN + 20, textAlign : "left", font : "20px san-serif"};
-        this.text_scorePlayerTwo = {text : "", x : LEFT_MARGIN, y : UPPER_MARGIN + CARD_SPACING, textAlign : "left", font : "20px san-serif"};
-
-        this.text_exit_game = {text : "- GAME -> G", x : this.width / 2, y : this.height - LOWER_MARGIN, textAlign : "center", font : "20px san-serif"};
-
-        this.coord_deck = {x : this.width - RIGHT_MARGIN - playedCardsBlock_width, y : this.coord_cardPlayed_playerOne.y};
-        this.coord_trump = {x : this.coord_deck.x + CARD_WIDTH + CARD_SPACING, y : this.coord_cardPlayed_playerOne.y};
+        this.initGraphicalData ();
 
         this.playerOne = new Player ();
         this.playerTwo = new Player ();
@@ -101,6 +74,122 @@ export class Game {
             this.keydownkHandler (event, nav);
         }, false);
         this.newGame ();
+    }
+
+    initGraphicalData () {
+        let ctx = this.nav.getCtx ();
+
+        g_card_width_scaledDown = CARD_WIDTH * SCALE_DOWN;
+        g_card_height_scaledDown = CARD_HEIGHT * SCALE_DOWN;
+        let playedCardsBlock_width = CARD_WIDTH + CARD_SPACING + CARD_WIDTH;
+        let handCardsBlock = CARD_WIDTH + CARD_SPACING + CARD_WIDTH + CARD_SPACING + CARD_WIDTH;
+
+        this.coord_cardPlayed_playerOne.x = (this.width - playedCardsBlock_width) / 2;
+        this.coord_cardPlayed_playerOne.y = (this.height - CARD_HEIGHT) / 2;
+
+        this.coord_cardPlayed_playerTwo.x = this.coord_cardPlayed_playerOne.x + CARD_WIDTH + CARD_SPACING; 
+        this.coord_cardPlayed_playerTwo.y = this.coord_cardPlayed_playerOne.y;
+
+        this.text_playerOneWin.text = "YOU WIN"; 
+        if (this.coord_cardPlayed_playerOne.y - 10 - 20 > UPPER_MARGIN + CARD_HEIGHT) {
+            console.log ("you win 1");
+            this.text_playerOneWin.x = this.coord_cardPlayed_playerOne.x; 
+            this.text_playerOneWin.y = this.coord_cardPlayed_playerOne.y - 10;
+        } else {
+            console.log ("you win 2");
+            this.text_playerOneWin.x = this.coord_cardPlayed_playerTwo.x + CARD_WIDTH + 10; 
+            this.text_playerOneWin.y = this.coord_cardPlayed_playerTwo.y + 20;
+        }
+        this.text_playerOneWin.textAlign = "left";
+        this.text_playerOneWin.font = "20px san-serif";
+
+        this.text_playerTwoWin.text = "ROBOT WINS"; 
+        if (this.coord_cardPlayed_playerOne.y - 10 -20 > UPPER_MARGIN + CARD_HEIGHT) {
+            this.text_playerTwoWin.x = this.coord_cardPlayed_playerOne.x; 
+            this.text_playerTwoWin.y = this.coord_cardPlayed_playerOne.y - 10;
+        } else {
+            this.text_playerTwoWin.x = this.coord_cardPlayed_playerTwo.x + CARD_WIDTH + 10; 
+            this.text_playerTwoWin.y = this.coord_cardPlayed_playerTwo.y + 20;
+        }
+        this.text_playerTwoWin.textAlign = "left";
+        this.text_playerTwoWin.font = "20px san-serif";
+
+        this.coord_cardPlPrev_playerOne.x = LEFT_MARGIN;
+        this.coord_cardPlPrev_playerOne.y = this.coord_cardPlayed_playerOne.y;
+
+        this.coord_cardPlPrev_playerTwo.x = this.coord_cardPlPrev_playerOne.x + g_card_width_scaledDown + CARD_SPACING / 2;
+        this.coord_cardPlPrev_playerTwo.y = this.coord_cardPlayed_playerOne.y;
+
+        this.text_plPrevOneWin.text = "YOU WIN"; 
+        this.text_plPrevOneWin.x = LEFT_MARGIN; 
+        this.text_plPrevOneWin.y = this.coord_cardPlayed_playerOne.y - 10;
+        this.text_plPrevOneWin.textAlign = "left";
+        this.text_plPrevOneWin.font = "15px san-serif";
+
+        this.text_plPrevTwoWin.text = "ROBOT WINS"; 
+        this.text_plPrevTwoWin.x = LEFT_MARGIN; 
+        this.text_plPrevTwoWin.y = this.coord_cardPlayed_playerOne.y - 10;
+        this.text_plPrevTwoWin.textAlign = "left";
+        this.text_plPrevTwoWin.font = "15px san-serif";
+
+        this.coord_handCards_playerOne [0].x = (this.width - handCardsBlock) / 2;
+        this.coord_handCards_playerOne [0].y = UPPER_MARGIN;
+        for (let i=1; i < common.HAND_CARDS; i++) {
+           this.coord_handCards_playerOne [i].x = this.coord_handCards_playerOne [0].x + (CARD_WIDTH + CARD_SPACING) * i;
+           this.coord_handCards_playerOne [i].y = UPPER_MARGIN;
+        }
+
+        this.coord_handCards_playerTwo [0].x = (this.width - handCardsBlock) / 2; 
+        this.coord_handCards_playerTwo [0].y = this.height - LOWER_MARGIN - CARD_HEIGHT;
+        for (let i=1; i < common.HAND_CARDS; i++) {
+           this.coord_handCards_playerTwo [i].x = this.coord_handCards_playerTwo[0].x + (CARD_WIDTH + CARD_SPACING) * i; 
+           this.coord_handCards_playerTwo [i].y = this.height - LOWER_MARGIN - CARD_HEIGHT;
+        }
+
+        this.text_playerOne.text = "YOU"; 
+        this.text_playerOne.x = LEFT_MARGIN;
+        this.text_playerOne.y = this.coord_handCards_playerOne [0].y;
+        this.text_playerOne.textAlign = "left"; 
+        this.text_playerOne.font = "15px san-serif";
+
+        this.text_playerTwo.text = "ROBOT"; 
+        this.text_playerTwo.x = LEFT_MARGIN; 
+        this.text_playerTwo.y = this.coord_handCards_playerTwo [0].y; 
+        this.text_playerTwo.textAlign = "left"; 
+        this.text_playerTwo.font = "15px san-serif";
+
+        this.text_scorePlayerOne.text = ""; 
+        this.text_scorePlayerOne.x = LEFT_MARGIN; 
+        this.text_scorePlayerOne.y = 20; 
+        this.text_scorePlayerOne.textAlign = "left"; 
+        this.text_scorePlayerOne.font = "20px san-serif";
+
+        this.text_scorePlayerTwo.text = ""; 
+        this.text_scorePlayerTwo.x = LEFT_MARGIN; 
+        this.text_scorePlayerTwo.y = UPPER_MARGIN + CARD_SPACING; 
+        this.text_scorePlayerTwo.textAlign = "left";
+        this.text_scorePlayerTwo.font = "20px san-serif";
+
+        this.text_exit_game.text = "New Briscola Game";
+        this.text_exit_game.x = this.width / 2; 
+        this.text_exit_game.y = this.height - LOWER_MARGIN; 
+        this.text_exit_game.textAlign = "center"; 
+        this.text_exit_game.font = "20px san-serif";
+        ctx.font = this.text_exit_game.font;
+        this.text_exit_game.w = ctx.measureText(this.text_exit_game.text).width;
+        this.text_exit_game.h = 20;
+
+        this.coord_deck.x = this.width - RIGHT_MARGIN - CARD_WIDTH;
+        this.coord_deck.y = (this.height / 2) - CARD_HEIGHT - (CARD_SPACING / 2);
+
+        this.coord_trump.x = this.coord_deck.x; 
+        this.coord_trump.y = (this.height / 2) + (CARD_SPACING / 2);
+    }
+
+    resize (canvasWidth, canvasHeight) {
+        this.x = 0; this.y = 0;
+        this.width = canvasWidth; this.height = canvasHeight;
+        this.initGraphicalData ();
     }
 
     newGame () {
@@ -196,7 +285,7 @@ export class Game {
             ctx.textAlign = this.text_scorePlayerOne.textAlign;
             ctx.fillText(this.text_scorePlayerOne.text, this.text_scorePlayerOne.x, this.text_scorePlayerOne.y);  
 
-            let xW = LEFT_MARGIN; let yW = this.text_scorePlayerOne.y + 10;
+            let xW = LEFT_MARGIN; let yW = this.text_scorePlayerOne.y + 5;
             for (let i=0; i < common.WIN_CARDS_MAX; i++) {
                 this.playerOne.getCardsWon (card, i);
                 if (card.suit != common.Suit.NoSuit) {
@@ -210,7 +299,7 @@ export class Game {
                 } else {
                     break;
                 }
-                if (xW + g_card_width_scaledDown + 10 < this.width) {
+                if (xW + g_card_width_scaledDown + 10 < (this.width - g_card_width_scaledDown) ) {
                     xW = xW + g_card_width_scaledDown + 10;
                 } else {
                     xW = LEFT_MARGIN; 
@@ -224,7 +313,7 @@ export class Game {
             ctx.textAlign = this.text_scorePlayerTwo.textAlign;
             ctx.fillText(this.text_scorePlayerTwo.text, xW, yW);
 
-            yW = yW + 10;
+            yW = yW + 5;
             for (let i=0; i < common.WIN_CARDS_MAX; i++) {
                 this.playerTwo.getCardsWon (card, i);
                 if (card.suit != common.Suit.NoSuit) {
@@ -238,13 +327,25 @@ export class Game {
                 } else {
                     break;
                 }
-                if (xW + g_card_width_scaledDown + 10 < this.width) {
+                if (xW + g_card_width_scaledDown + 10 < (this.width - g_card_width_scaledDown) ) {
                     xW = xW + g_card_width_scaledDown + 10;
                 } else {
                     xW = LEFT_MARGIN; 
                     yW = yW + g_card_height_scaledDown + 10;
                 }
             }
+
+            if ( (xW + g_card_width_scaledDown + 10) > (this.text_exit_game.x - this.text_exit_game.w / 2 - 10) &&
+                 (yW + g_card_width_scaledDown + 10) > (this.text_exit_game.y - this.text_exit_game.h - 10) ) {
+               let delta = (xW + g_card_width_scaledDown + 10) - (this.text_exit_game.x - this.text_exit_game.w / 2 - 10) + 10;
+               this.text_exit_game.x += delta;
+            }
+            ctx.beginPath();
+            ctx.rect( (this.text_exit_game.x - this.text_exit_game.w / 2 - 10), (this.text_exit_game.y - this.text_exit_game.h - 10), 
+                        this.text_exit_game.w + 20, this.text_exit_game.h + 10);
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.stroke();
+            ctx.closePath();
 
             ctx.globalAlpha = 1.0;
             ctx.font = this.text_exit_game.font;
@@ -558,6 +659,20 @@ export class Game {
                 }
             }
         }
+        if (this.gameState == common.GameState.ShowOutcomeGame) {
+            let relativeX = e.clientX - this.canvas.offsetLeft;
+            let relativeY = e.clientY - this.canvas.offsetTop;
+            if (relativeX > (this.text_exit_game.x - this.text_exit_game.w / 2 - 10) + this.text_exit_game.w + 20 || 
+                relativeX < (this.text_exit_game.x - this.text_exit_game.w / 2 - 10) ||
+                relativeY > (this.text_exit_game.y - this.text_exit_game.h - 10) + this.text_exit_game.h + 10 || 
+                relativeY < (this.text_exit_game.y - this.text_exit_game.h - 10) ) {
+            } else {
+                this.newGame();
+                this.gameState = common.GameState.WaitingForPlayersToPlayCard;
+            }
+
+        }
+        
     }
 
     keydownkHandler (e, nav) {

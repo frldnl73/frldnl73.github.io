@@ -15,6 +15,14 @@ export class Nav {
         this.currentState = this.navMenu;
     }
 
+    resize (canvasWidth, canvasHeight, ctx) {
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
+        this.ctx = ctx;
+        this.navMenu.resize (this);
+        this.navGame.resize (this);
+    }
+
     render () {
         this.currentState.render ();
     }

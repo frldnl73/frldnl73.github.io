@@ -73,17 +73,49 @@ export class NavMenu extends NavState {
     }
 
     init (nav) {
+        let ctx = nav.getCtx ();
         let xOff = nav.getCanvasWidth () / 2;
         let yOff = nav.getCanvasHeight () / 2;
         let verticalSpacing = 30;
 
-        this.text_exit = {text : "- Exit -> Q", x : xOff, y : yOff, textAlign : "center", font : "25px san-serif"};
-        this.text_game = {text : "- Game -> G", x : xOff, y : yOff + verticalSpacing, textAlign : "center", font : "25px san-serif"};
+        this.text_exit = {text : "- Exit -> Q", x : xOff, y : yOff, textAlign : "center", font : "25px san-serif", w : 0 , h : 25};
+        ctx.font = this.text_exit.font;
+        this.text_exit.w = ctx.measureText(this.text_exit.text).width;
+
+        this.text_game = {text : "  New Briscola Game  ", x : xOff, y : yOff + verticalSpacing, textAlign : "center", font : "25px san-serif", w : 0, h : 25};
+        ctx.font = this.text_game.font;
+        this.text_game.w = ctx.measureText(this.text_game.text).width;
 
         this.nav = nav;
-        document.addEventListener ("keydown", (event) => {
-            this.keyDownHandler (event, nav);
-        }, false);
+        this.canvas = document.getElementById("myCanvas");
+
+        if (!this.clickListenerActive) {
+            document.addEventListener ("click", (event) => {
+                this.clickHandler (event, nav);
+            }, false);
+        }
+        this.clickListenerActive = true;
+
+        if (!this.keydownListenerActive) {
+            document.addEventListener ("keydown", (event) => {
+                this.keyDownHandler (event, nav);
+            }, false);
+        }
+        this.keydownListenerActive = true;
+    }
+
+    resize (nav) {
+        this.init (nav);
+    }
+
+    clickHandler(e, nav) {
+        let relativeX = e.clientX - this.canvas.offsetLeft;
+        let relativeY = e.clientY - this.canvas.offsetTop;
+        if (relativeX > (this.text_game.x - this.text_game.w / 2) + this.text_game.w || relativeX < (this.text_game.x - this.text_game.w / 2) ||
+            relativeY > (this.text_game.y - this.text_game.h) + this.text_game.h || relativeY < (this.text_game.y - this.text_game.h) ) {
+        } else {
+            this.nav.setState (navGame_instance);
+        }
     }
 
     keyDownHandler(e) {
@@ -102,9 +134,15 @@ export class NavMenu extends NavState {
         let ctx = this.nav.getCtx ();
         ctx.fillStyle = "#FFFFFF";
 
-        ctx.font = this.text_exit.font;
-        ctx.textAlign = this.text_exit.textAlign;
-        ctx.fillText(this.text_exit.text, this.text_exit.x, this.text_exit.y);                
+//        ctx.font = this.text_exit.font;
+//        ctx.textAlign = this.text_exit.textAlign;
+//        ctx.fillText(this.text_exit.text, this.text_exit.x, this.text_exit.y);                
+
+        ctx.beginPath();
+        ctx.rect( (this.text_game.x - this.text_game.w / 2), (this.text_game.y - this.text_game.h), this.text_game.w, this.text_game.h + 10);
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.stroke();
+        ctx.closePath();
 
         ctx.font = this.text_game.font;
         ctx.textAlign = this.text_game.textAlign;
@@ -146,6 +184,10 @@ export class NavGame extends NavState {
     init (nav) {
         this.nav = nav;
         this.game = new Game (this.nav.getCanvasWidth (), this.nav.getCanvasHeight (), nav);
+    }
+
+    resize (nav) {
+        this.game.resize (this.nav.getCanvasWidth (), this.nav.getCanvasHeight ());
     }
 
     handleEvent () {
