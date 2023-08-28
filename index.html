@@ -1,38 +1,78 @@
 <html lang="en-US">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gamedev Canvas Workshop</title>
     <style>
       * {
         padding: 0;
         margin: 0;
+        box-sizing : border-box;
       }
       canvas {
-        background: #eee;
+        background: #1CAA06;
         display: block;
         margin: 0 auto;
+        max-width : 100%;
+        max-height : 100%;
       }
     </style>
   </head>
   <body>
-    <canvas id="myCanvas" width="600" height="600"></canvas>
+    <canvas id="myCanvas"></canvas>
 
     <script type="module">
         import { Nav } from './js/nav.js'
         import * as common from './js/common.js'
 
-        const canvas = document.getElementById("myCanvas");
-        const ctx = canvas.getContext("2d");
+//      TEST INI
+        class TestObject {
+            constructor () {
+                this.objectTest = {x : 5, y : 6};
+                this.copy = this.objectTest;
+                for (let property in this.objectTest) {
+                    console.log ("constructor : property / value -> " + property + " / " + this.objectTest[property]);
+                }
+                if (this.copy == this.objectTest) {
+                    console.log ("constructor this.objectTest is not changed ");
+                }
+            }
+            init () {
+//                this.objectTest = {x : 4, y : 5};
+                this.objectTest.x = 4;
+                this.objectTest.y = 5;
+                for (let property in this.objectTest) {
+                    console.log ("init : property / value -> " + property + " / " + this.objectTest[property]);
+                }
+                if (this.copy == this.objectTest) {
+                    console.log ("init this.objectTest is not changed ");
+                }
+            }
+        }
+        const objectTestObj = new TestObject ();
+        objectTestObj.init();
+//      TEST END
+
+
         
-        const nav = new Nav (common.CANVAS_WIDTH, common.CANVAS_HEIGHT, ctx);
+        const canvas = document.getElementById("myCanvas");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const ctx = canvas.getContext("2d");
+
+        const nav = new Nav (canvas.width, canvas.height, ctx);
         nav.init ();
 
         function animate () {
-            ctx.clearRect (0, 0, common.CANVAS_WIDTH, common.CANVAS_HEIGHT);
-
-            ctx.fillStyle = "#1CAA06";
-            ctx.fillRect(0, 0, common.CANVAS_WIDTH, common.CANVAS_HEIGHT);
+            ctx.clearRect (0, 0, canvas.width, canvas.height);
            
+            if (canvas.width != window.innerWidth || canvas.height != window.innerHeight) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                nav.resize (window.innerWidth, window.innerHeight, canvas.getContext("2d"));
+            }
+
             nav.update ();            
             nav.render ();            
     
